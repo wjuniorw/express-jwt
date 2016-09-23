@@ -1,9 +1,14 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express')
+const router = express.Router()
+const Model = require('../models/user')
+// const auth = require('../models/user')
 
-/* GET users listing. */
+/* GET users list */
 router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
-});
+  Model.find({})
+  .exec(function (err, users) {
+    res.send(users)
+  })
+})
 
-module.exports = router;
+module.exports = router
