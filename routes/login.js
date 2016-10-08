@@ -1,13 +1,15 @@
 const express = require('express')
 const router = express.Router()
 const Model = require('../models/user')
+const moment = require('moment')
+const jwt = require('jwt-simple')
+const secret = 'mySession'
 
 router
   .post('/', function (req, res, next) {
     var name = req.body.name
     var pass = req.body.pass
-    Model.find({$and:[{name: name}, {pass: pass}]})
-    .exec(function (err, user) {
+    Model.findOne({name: name}, function (err, user) {
       if (err) {
         console.log(err)
         res.render('error', {
@@ -17,7 +19,23 @@ router
         next(err)
       }
       else {
-        res.send(user)
+        user.comparePass(pass, function (isUser) {
+          if (isUser) {
+            var expires = moment().add(30, 'minutes').valueOf()
+            var token = jwt.encode({
+              iss: user._id,
+              exp: expires
+            }, secret)
+            res.send({
+              token: token,
+              user: user
+            })
+          }
+          else {
+            console.log(isUser)
+            res.send('incorrect password !')
+          }
+        })
       }
     })
   })
